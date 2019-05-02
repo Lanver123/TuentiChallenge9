@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+ #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 
 import sys
@@ -20,27 +20,37 @@ NUMS = ((1, u"一"),
 
 KANJIS = dict((kanji, num) for (num, kanji) in NUMS)
 
-def numerosPosibles(numeros, magnitudes):
+class ContinueI(Exception):
+    pass
+
+def numerosPosibles(kanji, numeros, magnitudes):
+    kanjis = [word for word in kanji]
     #Ajuste por cosas de letras
     magnitudes += [1]
-    if len(numeros) != len(magnitudes):
-        numeros += [1]
-    
     magnitudes.sort(reverse=True)
+    numeros += [0]*(len(magnitudes)-len(numeros))
+    print(numeros)
+
     combinaciones = list(permutations(numeros))
-    print(magnitudes, combinaciones)
-    numerosPosibles = []
-    
+    print(magnitudes)
+    print(combinaciones)
+    print(kanjis)
     for combinacion in combinaciones:
-        valorCombinacion = 0
-        for i in range(len(combinacion)):
-            valorCombinacion += combinacion[i] + magnitudes[i]
-        numerosPosibles += [valorCombinacion]
+        if "万" not in kanjis and len(combinacion) > 3 and combinacion[-4] != 0:
+            combinaciones.remove(combinacion)
+        if "千" not in kanjis and len(combinacion) > 2 and combinacion[-4] != 0:
+            combinaciones.remove(combinacion)        
+        if "百" not in kanjis and len(combinacion) > 1 and combinacion[-4] != 0:
+            combinaciones.remove(combinacion)
+        if "十" not in kanjis and combinacion[1] != 0:
+            combinaciones.remove(combinacion)
+
+    print(combinaciones)
+    return
     return numerosPosibles
 
 def numberMagnitude(kanji):
     words = [word for word in kanji]
-    print(words)
     magnitudes = []
     if u"万" in words:
         magnitudes += [10000]
@@ -96,6 +106,7 @@ def kanji2num(kanji, enc="utf-8"):
     return num + sum(nums)
 
 if __name__ == "__main__":
+    continue_i = ContinueI()
     file = open(sys.argv[1],"r")
     writeFile = open("out.txt", "w")
 
@@ -120,6 +131,36 @@ if __name__ == "__main__":
         posible2 = posibleNumbers(eq2)
         posible3 = posibleNumbers(igualdad)
 
-        print(posible1)
-        print(mag1)
-        print(numerosPosibles(posible1,mag1))
+        combinaciones1 = numerosPosibles(eq1,posible1,mag1)
+        combinaciones2 = numerosPosibles(eq2, posible2,mag2)
+        combinaciones3 = numerosPosibles(igualdad, posible3,mag3)
+
+        print(eq1)
+        print(eq2)
+        print(igualdad)
+        resultado = []
+        for combinacion1 in combinaciones1:
+            try:
+                for combinacion2 in combinaciones2:
+                    for combinacion3 in combinaciones3:
+                        saltar = False
+                        if(combinacion1 + combinacion2 == combinacion3):
+                            resultado += ["%i + %i = %i" % (combinacion1, combinacion2, combinacion3)]
+                            print("%i + %i = %i" % (combinacion1, combinacion2, combinacion3))
+                            saltar = True
+                        elif(combinacion1 - combinacion2 == combinacion3):
+                            resultado += ["%i - %i = %i" % (combinacion1, combinacion2, combinacion3)]
+                            print("%i - %i = %i" % (combinacion1, combinacion2, combinacion3))
+                            saltar = True
+                        elif(combinacion1 * combinacion2 == combinacion3):
+                            resultado += ["%i * %i = %i" % (combinacion1, combinacion2, combinacion3)]
+                            print("%i * %i = %i" % (combinacion1, combinacion2, combinacion3))
+                            saltar = True
+                        if saltar:
+                            combinaciones2.remove(combinacion2)
+                            combinaciones3.remove(combinacion3)
+                            raise continue_i
+            except ContinueI:
+                continue                   
+
+        print(resultado)
