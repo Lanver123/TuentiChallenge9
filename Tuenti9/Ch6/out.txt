@@ -1,0 +1,24 @@
+Case #1: c
+Case #2: t
+Case #3: v
+Case #4: t w
+Case #5: AMBIGUOUS
+Case #6: AMBIGUOUS
+Case #7: u a
+Case #8: AMBIGUOUS
+Case #9: AMBIGUOUS
+Case #10: AMBIGUOUS
+Case #11: AMBIGUOUS
+Case #12: AMBIGUOUS
+Case #13: AMBIGUOUS
+Case #14: AMBIGUOUS
+Case #15: u d
+Case #16: e n o
+Case #17: g d
+Case #18: t o w
+Case #19: AMBIGUOUS
+Case #20: i o w f
+Case #21: w p e
+Case #22: k b
+Case #23: AMBIGUOUS
+Case #24: k b t

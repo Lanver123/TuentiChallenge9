@@ -24,30 +24,50 @@ class ContinueI(Exception):
     pass
 
 def numerosPosibles(kanji, numeros, magnitudes):
-    kanjis = [word for word in kanji]
-    #Ajuste por cosas de letras
-    magnitudes += [1]
     magnitudes.sort(reverse=True)
+    magnitudes += [1]
     numeros += [0]*(len(magnitudes)-len(numeros))
-    print(numeros)
+    permutaciones = list(permutations(numeros))
 
-    combinaciones = list(permutations(numeros))
-    print(magnitudes)
-    print(combinaciones)
-    print(kanjis)
+    combinaciones = [list(zip(list(permutacion),magnitudes)) for permutacion in permutaciones]
+    
+    combinacionesFinales = []
     for combinacion in combinaciones:
-        if "万" not in kanjis and len(combinacion) > 3 and combinacion[-4] != 0:
-            combinaciones.remove(combinacion)
-        if "千" not in kanjis and len(combinacion) > 2 and combinacion[-4] != 0:
-            combinaciones.remove(combinacion)        
-        if "百" not in kanjis and len(combinacion) > 1 and combinacion[-4] != 0:
-            combinaciones.remove(combinacion)
-        if "十" not in kanjis and combinacion[1] != 0:
-            combinaciones.remove(combinacion)
+        flag = False
+        #Descartas los que tienen 1's sin sentido
+        for tupla in combinacion:
+            if tupla[1] == 1000 and tupla[0] == 1:
+                flag = True
+                break
+            if tupla[1] == 100 and tupla[0] == 1:
+                flag = True
+                break
+            if tupla[1] == 10 and tupla[0] == 1:
+                flag = True
+                break
+        if not flag:
+            #Cambias los 0's por 1's
+            for tupla in combinacion:
+                if tupla[1] == 10000 and tupla[0] == 0:
+                    combinacion[combinacion.index(tupla)] = (1, tupla[1])
+                if tupla[1] == 1000 and tupla[0] == 0:
+                    combinacion[combinacion.index(tupla)] = (1, tupla[1])
+                if tupla[1] == 100 and tupla[0] == 0:
+                    combinacion[combinacion.index(tupla)] = (1, tupla[1])
+                if tupla[1] == 10 and tupla[0] == 0:
+                    combinacion[combinacion.index(tupla)] = (1, tupla[1])
 
-    print(combinaciones)
-    return
-    return numerosPosibles
+        #Si tenemos un 1 * 1000 y un unico 1 en la pool, el numero no puede acabar en 1
+        if 10000 in magnitudes and combinacion[0][0] == 1 and numeros.count(1) == 1 and combinacion[-1][0] == 1:
+            continue
+        if not flag:
+            valorFinal = 0
+            for tupla in combinacion:
+                valorFinal += tupla[0]*tupla[1]
+
+            combinacionesFinales += [valorFinal]
+            
+    return combinacionesFinales
 
 def numberMagnitude(kanji):
     words = [word for word in kanji]
@@ -115,6 +135,7 @@ if __name__ == "__main__":
     igualdades = []
 
     numberEquations = int(file.readline())
+    case = 1
     for line in file:
         partes = line.split("OPERATOR")
         partes2 = partes[1].split("=")
@@ -134,10 +155,6 @@ if __name__ == "__main__":
         combinaciones1 = numerosPosibles(eq1,posible1,mag1)
         combinaciones2 = numerosPosibles(eq2, posible2,mag2)
         combinaciones3 = numerosPosibles(igualdad, posible3,mag3)
-
-        print(eq1)
-        print(eq2)
-        print(igualdad)
         resultado = []
         for combinacion1 in combinaciones1:
             try:
@@ -146,15 +163,12 @@ if __name__ == "__main__":
                         saltar = False
                         if(combinacion1 + combinacion2 == combinacion3):
                             resultado += ["%i + %i = %i" % (combinacion1, combinacion2, combinacion3)]
-                            print("%i + %i = %i" % (combinacion1, combinacion2, combinacion3))
                             saltar = True
                         elif(combinacion1 - combinacion2 == combinacion3):
                             resultado += ["%i - %i = %i" % (combinacion1, combinacion2, combinacion3)]
-                            print("%i - %i = %i" % (combinacion1, combinacion2, combinacion3))
                             saltar = True
                         elif(combinacion1 * combinacion2 == combinacion3):
                             resultado += ["%i * %i = %i" % (combinacion1, combinacion2, combinacion3)]
-                            print("%i * %i = %i" % (combinacion1, combinacion2, combinacion3))
                             saltar = True
                         if saltar:
                             combinaciones2.remove(combinacion2)
@@ -162,5 +176,5 @@ if __name__ == "__main__":
                             raise continue_i
             except ContinueI:
                 continue                   
-
-        print(resultado)
+        writeFile.write("Case #%i: " % (case) + resultado[0] + "\n")
+        case +=1
